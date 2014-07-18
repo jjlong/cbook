@@ -19,25 +19,10 @@ pr cbook
 		ds _all
 		loc allvars `r(varlist)'
 		di "`allvars'"
-	
+		
+		loc newvars 
 		foreach var of varlist `allvars' {
-			* Trim off the names of variables that have more than 26
-			loc x 1
- 			local leng = length("`var'")
- 			if `leng' > 29 {
-				loc `x' = `x' + 1
-   				local name = substr("`var'", 1, 28)
-				cap conf var `name'
-   				if !_rc {
-					loc rvar `name'
-				}
-				else {
-					loc rvar `name'`x'
-				}
-   			}
-			else {
-				loc rvar `var'
-			}
+			tempvar `var' 
 			local name: var lab `var'
 			if regexm("`name'", "________") {
 				drop `var'
@@ -47,35 +32,35 @@ pr cbook
 			}		
 			
 			* Row 1: Variable Name.
-			gen cb_`rvar' = "`var'" if _n == 1
+			gen ``var'' = "`var'" if _n == 1
 			
 			* Row 2: Variable label
 			loc lbl: var la `var'
-			replace cb_`rvar' = "`lbl'" if _n == 2
+			replace ``var'' = "`lbl'" if _n == 2
 			
 			* Row 6: Type
 			loc type: type `var'
 			di "`type'"
-			replace cb_`rvar' = "`type'" if _n == 6
+			replace ``var'' = "`type'" if _n == 6
 			
 			* Row 7: Total number of valid, nonmissing obs.
 			qui desc `var'
 			loc totalN = `r(N)'
 			qui tab `var' if mi(`var'), m
 			loc nonmiss = `totalN' - `r(N)'
-			replace cb_`rvar' = string(`nonmiss') if _n == 7
+			replace ``var'' = string(`nonmiss') if _n == 7
 
-			* Row 13: Imputed? No by default
-			replace cb_`rvar' = "no" if _n==13
+			* Row 13: Imputed? No by default [] JJL: Maybe should change this to be just blank, to avoid confusion. 
+			replace ``var'' = "no" if _n==13
 
 			*Rows 10-11, 15-17: Summary stats
 			qui cap su `var', d
 			if _rc == 0{
-				replace cb_`rvar' = string(r(min)) 	if _n==10 
-				replace cb_`rvar' = string(r(max)) 	if _n==11 
-				replace cb_`rvar' = string(r(mean)) if _n==15
-				replace cb_`rvar' = string(r(p50)) 	if _n==16 
-				replace cb_`rvar' = string(r(sd))	if _n==17 
+				replace ``var'' = string(r(min)) 	if _n==10 
+				replace ``var'' = string(r(max)) 	if _n==11 
+				replace ``var'' = string(r(mean)) if _n==15
+				replace ``var'' = string(r(p50)) 	if _n==16 
+				replace ``var'' = string(r(sd))	if _n==17 
 			}
 
 			* Row 12: (This may be tricky) Generating val labels
@@ -103,8 +88,9 @@ pr cbook
 					}
 				}
 				use `vallabel', clear
-				replace cb_`rvar' = `"`vallab'"' if _n == 12
+				replace ``var'' = `"`vallab'"' if _n == 12
 			}
+			loc newvars `newvars' ``var''
 		}
 
 		*Prepare the first column for the codebook, which gives the category names.
@@ -141,7 +127,7 @@ pr cbook
 			}
 		}
 		
-		keep fcol cb_*
+		keep fcol `newvars'
 		order fcol
 
 		qui ds
