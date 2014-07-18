@@ -24,9 +24,9 @@ pr cbook
 			* Trim off the names of variables that have more than 26
 			loc x 1
  			local leng = length("`var'")
- 			if `leng' > 26 {
+ 			if `leng' > 29 {
 				loc `x' = `x' + 1
-   				local name = substr("`var'", 1, 25)
+   				local name = substr("`var'", 1, 28)
 				cap conf var `name'
    				if !_rc {
 					loc rvar `name'
@@ -189,5 +189,6 @@ pr cbook
 		loc filename `excel'.xls
 	}
 	outsheet using `"`to'/`filename'"', replace
+	di "file `filename' saved"
 	restore
 end
