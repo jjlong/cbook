@@ -63,7 +63,7 @@ pr cbook
 				replace ``var'' = string(r(sd))	if _n==17 
 			}
 
-			* Row 12: (This may be tricky) Generating val labels
+			* Row 12: Value labels
 			if "`:val la `var''" != ""{
 				tempfile vallabel
 				if `c(stata_version)' < 11 {  
@@ -174,7 +174,7 @@ pr cbook
 	else {
 		loc filename `excel'.xls
 	}
-	outsheet using `"`to'/`filename'"', replace
+	outsheet using `"`to'/`filename'"', replace non 
 	di "file `filename' saved"
 	restore
 end
